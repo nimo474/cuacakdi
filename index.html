@@ -35,7 +35,9 @@
 
     <script>
         // Pastikan API_URL mengarah tepat ke fungsi serverless Vercel Anda
-const API_URL = '/api/cuaca'; 
+//const API_URL = '/api/cuaca'; 
+        // Ganti baris API_URL lama Anda dengan kode di bawah ini:
+const API_URL = window.location.origin + '/api/cuaca';
 
 const emojiCuaca = {
     'Clear': '☀️', 'Clouds': '☁️', 'Rain': '🌧️', 'Drizzle': '🌦️', 'Thunderstorm': '⛈️'
