@@ -1,0 +1,124 @@
+<div class="cuaca-container">
+    <h2 id="lokasi-cuaca">Memuat Cuaca...</h2>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Hari / Tanggal</th>
+                    <th>Cuaca</th>
+                    <th>Suhu</th>
+                    <th>Kelembapan</th>
+                </tr>
+            </thead>
+            <tbody id="tabel-cuaca-body">
+                <!-- Data otomatis dimasukkan di sini oleh JavaScript -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .cuaca-container {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .cuaca-container h2 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #f5f5f5;
+        color: #333;
+    }
+</style>
+
+<script>
+    // PENTING: Ganti dengan API Key milik Anda dari OpenWeatherMap
+    //const API_KEY = 'MASUKKAN_API_KEY_ANDA_DI_SINI'; 
+    
+    // Koordinat Rantepao, Toraja Utara
+    //const LAT = '-2.9722';
+    //const LON = '119.8983'; 
+// JavaScript sekarang memanggil file PHP internal Anda, BUKAN OpenWeatherMap langsung
+const API_URL = 'ambil-cuaca.php'; 
+
+// Hapus variabel API_KEY, LAT, dan LON dari kode JavaScript Anda karena sudah dipindah ke PHP!
+
+
+    // URL API untuk prakiraan cuaca 5 hari (data diperbarui tiap 3 jam)
+    const API_URL = `https://openweathermap.org{LAT}&lon=${LON}&appid=${API_KEY}&units=metric&lang=id`;
+
+    // Kamus emoji untuk visual jangkar cuaca
+    const emojiCuaca = {
+        'Clear': '☀️',
+        'Clouds': '☁️',
+        'Rain': '🌧️',
+        'Drizzle': '🌦️',
+        'Thunderstorm': '⛈️',
+        'Snow': '❄️'
+    };
+
+    async function ambilDataCuaca() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.message);
+
+            document.getElementById('lokasi-cuaca').innerText = `Prakiraan Cuaca ${data.city.name}`;
+            
+            const tbody = document.getElementById('tabel-cuaca-body');
+            tbody.innerHTML = ''; // Bersihkan loading text
+
+            // Filter data untuk mengambil 1 sampel per hari (OpenWeather mengirim data per 3 jam)
+            const listHarian = data.list.filter(item => item.dt_txt.includes("12:00:00"));
+
+            listHarian.forEach(item => {
+                const opsiTanggal = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+                const tanggalFormat = new Date(item.dt * 1000).toLocaleDateString('id-ID', opsiTanggal);
+                
+                const kondisiUtama = item.weather[0].main;
+                const emoji = emojiCuaca[kondisiUtama] || '✨';
+                const deskripsi = item.weather[0].description;
+                
+                const suhu = Math.round(item.main.temp);
+                const kelembapan = item.main.humidity;
+
+                const baris = `
+                    <tr>
+                        <td><strong>${tanggalFormat}</strong></td>
+                        <td>${emoji} ${deskripsi.charAt(0).toUpperCase() + deskripsi.slice(1)}</td>
+                        <td>${suhu}°C</td>
+                        <td>${kelembapan}%</td>
+                    </tr>
+                `;
+                tbody.innerHTML += baris;
+            });
+
+        } catch (error) {
+            console.error('Gagal mengambil data:', error);
+            document.getElementById('lokasi-cuaca').innerText = 'Gagal memuat data cuaca';
+        }
+    }
+
+    // Jalankan fungsi saat halaman dimuat
+    ambilDataCuaca();
+</script>
