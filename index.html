@@ -34,48 +34,58 @@
     </style>
 
     <script>
-        // Memanggil file PHP internal di folder yang sama
-        const API_URL = 'api/cuaca'; 
+        // Pastikan API_URL mengarah tepat ke fungsi serverless Vercel Anda
+const API_URL = '/api/cuaca'; 
 
-        const emojiCuaca = {
-            'Clear': '☀️', 'Clouds': '☁️', 'Rain': '🌧️', 'Drizzle': '🌦️', 'Thunderstorm': '⛈️'
-        };
+const emojiCuaca = {
+    'Clear': '☀️', 'Clouds': '☁️', 'Rain': '🌧️', 'Drizzle': '🌦️', 'Thunderstorm': '⛈️'
+};
 
-        async function ambilDataCuaca() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
+async function ambilDataCuaca() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
 
-                if (data.error) throw new Error(data.error);
-
-                document.getElementById('lokasi-cuaca').innerText = `Prakiraan Cuaca ${data.city.name}`;
-                const tbody = document.getElementById('tabel-cuaca-body');
-                tbody.innerHTML = '';
-
-                // Ambil sampel data tengah hari (12:00:00) untuk 5-6 hari ke depan
-                const listHarian = data.list.filter(item => item.dt_txt.includes("12:00:00"));
-
-                listHarian.forEach(item => {
-                    const opsiTanggal = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-                    const tanggalFormat = new Date(item.dt * 1000).toLocaleDateString('id-ID', opsiTanggal);
-                    const emoji = emojiCuaca[item.weather[0].main] || '✨';
-                    const deskripsi = item.weather[0].description;
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${tanggalFormat}</strong></td>
-                            <td>${emoji} ${deskripsi.charAt(0).toUpperCase() + deskripsi.slice(1)}</td>
-                            <td>${Math.round(item.main.temp)}°C</td>
-                            <td>${item.main.humidity}%</td>
-                        </tr>
-                    `;
-                });
-            } catch (error) {
-                console.error(error);
-                document.getElementById('lokasi-cuaca').innerText = 'Gagal memuat data cuaca';
-            }
+        // JIKA SERVER BACKEND MENGIRIM ERROR, TAMPILKAN DI KONSOL BROWSER
+        if (data.error) {
+            console.error("Error dari Backend Vercel:", data.error);
+            document.getElementById('lokasi-cuaca').innerText = 'Gagal memuat data cuaca';
+            return;
         }
-        ambilDataCuaca();
+
+        document.getElementById('lokasi-cuaca').innerText = `Prakiraan Cuaca ${data.city.name}`;
+        const tbody = document.getElementById('tabel-cuaca-body');
+        tbody.innerHTML = '';
+
+        // OpenWeatherMap mengirim data per 3 jam. Kita filter agar hanya mengambil data harian.
+        // Jika filter "12:00:00" kosong karena perbedaan zona waktu, kita ambil data tiap kelipatan 8 indeks (24 jam)
+        const listHarian = data.list.filter((item, index) => index % 8 === 0).slice(0, 6);
+
+        listHarian.forEach(item => {
+            const opsiTanggal = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            const tanggalFormat = new Date(item.dt * 1000).toLocaleDateString('id-ID', opsiTanggal);
+            
+            // Ambil kondisi cuaca utama untuk menentukan emoji
+            const kondisiUtama = item.weather[0].main;
+            const emoji = emojiCuaca[kondisiUtama] || '✨';
+            const deskripsi = item.weather[0].description;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${tanggalFormat}</strong></td>
+                    <td>${emoji} ${deskripsi.charAt(0).toUpperCase() + deskripsi.slice(1)}</td>
+                    <td>${Math.round(item.main.temp)}°C</td>
+                    <td>${item.main.humidity}%</td>
+                </tr>
+            `;
+        });
+    } catch (error) {
+        console.error("Gagal fetch data dari frontend:", error);
+        document.getElementById('lokasi-cuaca').innerText = 'Gagal memuat data cuaca';
+    }
+}
+ambilDataCuaca();
+
     </script>
 </body>
 </html>
