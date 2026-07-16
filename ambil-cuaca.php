@@ -12,8 +12,8 @@ $LAT = "-2.9722";
 $LON = "119.8983";
 
 // 3. URL resmi OpenWeatherMap
-$API_URL = "https://openweathermap.org{$LAT}&lon={$LON}&appid={$API_KEY}&units=metric&lang=id";
-
+// $API_URL = "https://openweathermap.org{$LAT}&lon={$LON}&appid={$API_KEY}&units=metric&lang=id";
+$API_URL = "https://api.openweathermap.org/data/2.5/weather?lat={$LAT}&lon={$LON}&appid={$API_KEY}&units=metric&lang=id";
 // 4. Ambil data dari OpenWeatherMap menggunakan cURL
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $API_URL);
