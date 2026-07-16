@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     const LAT = "-3.9450";
     const LON = "122.4989";
 
-    const API_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${API_KEY}&units=metric&lang=id`;
+    const API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${LAT}&lon=${LON}&appid=${API_KEY}&units=metric&lang=id`;
 
     // Pengaturan Header Keamanan (CORS)
     res.setHeader('Access-Control-Allow-Origin', '*');
